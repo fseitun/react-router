@@ -85,6 +85,87 @@ describe("<Link> anchor href", () => {
     expect(anchor.props.href).toEqual("/home/inbox");
   });
 
+  test('<Link to=".."> resolves relative to its parent route', () => {
+    let renderer = createTestRenderer(
+      <Router initialEntries={["/inbox/messages/123"]}>
+        <Routes>
+          <Route path="inbox">
+            <Route path="messages/:id" element={<Link to=".." />} />
+          </Route>
+        </Routes>
+      </Router>
+    );
+
+    let anchor = renderer.root.findByType("a");
+
+    expect(anchor.props.href).toEqual("/inbox");
+  });
+
+  test('<Link to=".."> in an index route resolves relative to its parent route\'s parent', () => {
+    let renderer = createTestRenderer(
+      <Router initialEntries={["/inbox/messages"]}>
+        <Routes>
+          <Route path="inbox/messages">
+            <Route index element={<Link to=".." />} />
+          </Route>
+        </Routes>
+      </Router>
+    );
+
+    let anchor = renderer.root.findByType("a");
+
+    expect(anchor.props.href).toEqual("/");
+  });
+
+  test('<Link to> with more ".." segments than parent routes resolves relative to the root URL', () => {
+    let renderer = createTestRenderer(
+      <Router initialEntries={["/inbox/messages/123"]}>
+        <Routes>
+          <Route path="inbox/messages">
+            <Route path=":id" element={<Link to="../.." />} />
+          </Route>
+        </Routes>
+      </Router>
+    );
+
+    let anchor = renderer.root.findByType("a");
+
+    expect(anchor.props.href).toEqual("/");
+  });
+
+  test('<Link to=".."> with no parent route resolves relative to the root URL', () => {
+    let renderer = createTestRenderer(
+      <Router initialEntries={["/inbox/messages"]}>
+        <Routes>
+          <Route path="inbox/messages" element={<Link to=".." />} />
+        </Routes>
+      </Router>
+    );
+
+    let anchor = renderer.root.findByType("a");
+
+    expect(anchor.props.href).toEqual("/");
+  });
+
+  test("<Link to> pointing to a sibling route resolves relative to its parent route", () => {
+    let renderer = createTestRenderer(
+      <Router initialEntries={["/inbox/messages/123"]}>
+        <Routes>
+          <Route path="inbox">
+            <Route
+              path="messages/:id"
+              element={<Link to="../messages/456" />}
+            />
+          </Route>
+        </Routes>
+      </Router>
+    );
+
+    let anchor = renderer.root.findByType("a");
+
+    expect(anchor.props.href).toEqual("/inbox/messages/456");
+  });
+
   describe("under a <Router basename>", () => {
     test("absolute <Link to> resolves relative to the basename", () => {
       let renderer = createTestRenderer(
